@@ -12,9 +12,9 @@ Estimates Markov random fields with a L1 constraint.
 \tabular{ll}{
 Package: \tab mMRF\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
+Version: \tab 0.1 \cr
 Date: \tab 2015-04-20\cr
-License: \tab What license is it under?\cr
+License: \tab ? \cr
 }
 }
 \author{
