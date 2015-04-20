@@ -1,0 +1,11 @@
+Package: mMRF
+Type: Package
+Title: Estimating mixed Markov random fields
+Version: 0.01
+Date: 2015-04-07
+Author: Jonas Haslbeck
+Maintainer: Jonas Haslbeck  <jonashaslbeck@gmail.com>
+Description: Functions to estimate and sample from a mixed Markov random field.
+License: ?
+Imports: matrixcalc, glmnet
+LazyData: true
