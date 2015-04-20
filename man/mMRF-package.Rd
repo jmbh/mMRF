@@ -3,12 +3,10 @@
 \alias{mMRF}
 \docType{package}
 \title{
-What the package does (short line)
-~~ package title ~~
+Estimate Markov random fields
 }
 \description{
-More about what it does (maybe more than one line)
-~~ A concise (1-5 lines) description of the package ~~
+Estimates Markov random fields with a L1 constraint. 
 }
 \details{
 \tabular{ll}{
@@ -18,24 +16,19 @@ Version: \tab 1.0\cr
 Date: \tab 2015-04-20\cr
 License: \tab What license is it under?\cr
 }
-~~ An overview of how to use the package, including the most important functions ~~
 }
 \author{
-Who wrote it
 
-Maintainer: Who to complain to <yourfault@somewhere.net>
-~~ The author and/or maintainer of the package ~~
+
+Jonas Haslbeck
+
+Maintainer: <jonashaslbeck@gmail.com>
 }
 \references{
-~~ Literature or other references for background information ~~
+Loh, P. L., & Wainwright, M. J. (2013). Structure estimation for discrete graphical models: Generalized covariance matrices and their inverses. The Annals of Statistics, 41(6), 3022-3049.
+
+Yang, E., Baker, Y., Ravikumar, P., Allen, G., & Liu, Z. (2014). Mixed graphical models via exponential families. In Proceedings of the Seventeenth International Conference on Artificial Intelligence and Statistics (pp. 1042-1050).
+
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
-~~ documentation directory ~~
 \keyword{ package }
-\seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
-\examples{
-~~ simple examples of the most important functions ~~
-}
+\examples{}
