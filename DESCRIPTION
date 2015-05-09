@@ -6,6 +6,7 @@ Date: 2015-04-07
 Author: Jonas Haslbeck
 Maintainer: Jonas Haslbeck  <jonashaslbeck@gmail.com>
 Description: Functions to estimate and sample from a mixed Markov random field.
-License: ?
-Imports: matrixcalc, glmnet
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.11.4), matrixcalc, glmnet
+LinkingTo: Rcpp
 LazyData: true

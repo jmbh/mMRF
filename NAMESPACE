@@ -1,4 +1,9 @@
+useDynLib(mMRF)
+importFrom(Rcpp, evalCpp)
+importFrom(matrixcalc, is.positive.definite)
+import(glmnet)
+export(mMRFfit, mMRFsampler, confusion)
 
 
-import(matrixcalc,glmnet)
-export(mMRFfit)
+
+
