@@ -190,7 +190,7 @@ mMRFfit <- function(
       # lambda selection with CV
     } else {
       
-      fit <- cv.glmnet(X, data[,v], family=fam, alpha=1, nfold=folds, type.measure = "deviance")
+      fit <- cv.glmnet(X, data[,v], family=fam, alpha=1, nfolds=folds, type.measure = "deviance")
       lambda_select <-  fit$lambda.min
       coefs <- coef(fit, s=lambda_select)
       
