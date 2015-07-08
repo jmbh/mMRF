@@ -6,14 +6,14 @@
 Estimate Markov random fields
 }
 \description{
-Estimates Markov random fields with a L1 constraint. 
+Estimates Markov random fields with L1-constrained neighborhood regression. 
 }
 \details{
 \tabular{ll}{
 Package: \tab mMRF\cr
 Type: \tab Package\cr
 Version: \tab 0.1 \cr
-Date: \tab 2015-04-20\cr
+Date: \tab 2015-07-08\cr
 License: \tab ? \cr
 }
 }
