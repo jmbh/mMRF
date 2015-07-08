@@ -21,23 +21,9 @@ mMRFfit <- function(
   
   # function to compute neighborhood size (not completely trivial because of categoricals)
   
-  f_comb_cat_par <- function(dummy.ind, coefs_bin, nNode, v, n_lambdas) {
+#  f_comb_cat_par <- function(dummy.ind, coefs_bin, nNode, v, n_lambdas) {
     
-    coefs_comb <- matrix(0,nrow=(nNode-1), ncol=n_lambdas)
-    i_nodes <- (1:nNode)[-v]
-    
-    for(cin in 1:(nNode-1)) {
-      sec_par <- dummy.ind[-which(dummy.ind==v)]==i_nodes[cin] # indicator for parameters of one var
-      coefs_ci <- coefs_bin[sec_par,]
-      if(sum(sec_par)==1) { #if v=continuous
-        coefs_comb[cin,] <- coefs_ci
-      } else {
-        coefs_comb[cin,] <- colSums(coefs_ci)
-      }
-    }
-    n_neighbors <- colSums(coefs_comb != 0) #colsums ok, because glmnet requires 2 predictor columns
-    return(n_neighbors) 
-  }
+
   
   # step 1: sanity checks & info from data
   stopifnot(ncol(data)==length(type)) # type vector has to match data
@@ -170,13 +156,37 @@ mMRFfit <- function(
       
       if(type[v]!="c") { #continuous case
         coefs_bin <- coef(fit)[-1,][1:n_para,] != 0 #nonzero?
-        n_neighbors <- f_comb_cat_par(dummy.ind, coefs_bin, nNode, v, n_lambdas)
+        coefs_comb <- matrix(0,nrow=(nNode-1), ncol=n_lambdas)
+        i_nodes <- (1:nNode)[-v]
+        for(cin in 1:(nNode-1)) {
+          sec_par <- dummy.ind[-which(dummy.ind==v)]==i_nodes[cin] # indicator for parameters of one var
+          coefs_ci <- coefs_bin[sec_par,]
+          
+          if(sum(sec_par)>1) { #if variable i_nodes[cin] is categorical with more than 2 cats (or 2 parameters)
+            coefs_comb[cin,] <- colSums(coefs_ci)
+          } else {
+            coefs_comb[cin,] <- coefs_ci
+          }
+        }
+        n_neighbors <- colSums(coefs_comb != 0) #colsums ok, because glmnet requires 2 predictor columns
       }
       if(type[v]=="c"){ #categorical case
         m_neighbors <- matrix(0,ncol=n_lambdas, nrow=n_cats)
         for(ca in 1:n_cats){
           coefs_bin <- coef(fit)[[ca]][-1,][1:n_para,] != 0 #nonzero?
-          m_neighbors[ca,] <- f_comb_cat_par(dummy.ind, coefs_bin, nNode, v, n_lambdas)
+          coefs_comb <- matrix(0,nrow=(nNode-1), ncol=n_lambdas)
+          i_nodes <- (1:nNode)[-v]
+          for(cin in 1:(nNode-1)) {
+            sec_par <- dummy.ind[-which(dummy.ind==v)]==i_nodes[cin] # indicator for parameters of one var
+            coefs_ci <- coefs_bin[sec_par,]
+            
+            if(sum(sec_par)>1) { #if variable i_nodes[cin] is categorical with more than 2 cats (or 2 parameters)
+              coefs_comb[cin,] <- colSums(coefs_ci)
+            } else {
+              coefs_comb[cin,] <- coefs_ci
+            }
+          }
+          m_neighbors[ca,] <- colSums(coefs_comb != 0) #colsums ok, because glmnet requires 2 predictor columns
         } 
         n_neighbors <- apply(m_neighbors,2, max) #rule : one nonzero parameter means = neighborhood present
       }
