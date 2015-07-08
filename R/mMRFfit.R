@@ -23,22 +23,21 @@ mMRFfit <- function(
   
   f_comb_cat_par <- function(dummy.ind, coefs_bin, nNode, v, n_lambdas) {
     
-    coefs_comb <- matrix(0,nrow=nNode, ncol=n_lambdas)
+    coefs_comb <- matrix(0,nrow=(nNode-1), ncol=n_lambdas)
+    i_nodes <- (1:nNode)[-v]
     
-    for(ci in (1:nNode)[-v]) {
-      sec_par <- dummy.ind[-which(dummy.ind==v)]==ci # indicator for parameters of one var
+    for(cin in 1:(nNode-1)) {
+      sec_par <- dummy.ind[-which(dummy.ind==v)]==i_nodes[cin] # indicator for parameters of one var
       coefs_ci <- coefs_bin[sec_par,]
       if(sum(sec_par)==1) { #if v=continuous
-        coefs_comb[ci,] <- coefs_ci
+        coefs_comb[cin,] <- coefs_ci
       } else {
-        coefs_comb[ci,] <- colSums(coefs_ci)
+        coefs_comb[cin,] <- colSums(coefs_ci)
       }
     }
     n_neighbors <- colSums(coefs_comb != 0) #colsums ok, because glmnet requires 2 predictor columns
     return(n_neighbors) 
   }
-  
-  
   
   # step 1: sanity checks & info from data
   stopifnot(ncol(data)==length(type)) # type vector has to match data
@@ -162,6 +161,7 @@ mMRFfit <- function(
       
       # calc LL for all lambdas
       dev <- glmnet:::deviance.glmnet(fit)
+
       LL <- - 1/2 * dev + LL_sat
       
       # calc nonzero coefficients
