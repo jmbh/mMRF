@@ -71,12 +71,13 @@ Jonas Haslbeck}
 head(data_mixed) #example data
 
 type <- c("c", "g", "p", "g") #data contains a categorical, a gaussian, a poisson and a gaussian variable in that order
-levels <- c(3, 1, 1, 1) # the categorical variable has three categories
+lev <- c(3, 1, 1, 1) # the categorical variable has three categories
 
 mMRFfit(data=data_mixed,  
         type=type,
-        levels=levels, 
+        lev=lev,
+        lambda.sel="CV",
         d=1, 
-        rule.w="OR",
-        rule.b="OR")
-}
+        rule.cat="OR",
+        rule.reg="AND")
+

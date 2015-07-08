@@ -1,4 +1,12 @@
 
+
+load("data/data_mixed.RData")
+head(data_mixed)
+
+data <- data_mixed
+type <- c("c", "g", "p", "g") #data contains a categorical, a gaussian, a poisson and a gaussian variable in that order
+lev <- c(3, 1, 1, 1) # the categorical variable has three categories
+
 #### FUNCTION ####
 
 mMRFfit <- function(
@@ -8,12 +16,35 @@ mMRFfit <- function(
   lambda.sel="CV", #method for penalization parameter (lambda) -selection 
   folds=10, #folds in case CV is used for lambda selection
   gam=.25, #tuning parameter for EBIC, in case EBIC is used for lambda selection
-  d=2, #maximal degree of the true graph
+  d=1, #maximal degree of the true graph
   rule.reg="AND", #parameter-aggregation of categorical variables
   rule.cat="OR"  #parameter-aggregation across symmetric estimation
 )
   
 {
+  
+  ## functions
+  
+  # function to compute neighborhood size (not completely trivial because of categoricals)
+  
+  f_comb_cat_par <- function(dummy.ind, coefs_bin, nNode, v, n_lambdas) {
+    
+    coefs_comb <- matrix(0,nrow=nNode, ncol=n_lambdas)
+    
+    for(ci in (1:nNode)[-v]) {
+      sec_par <- dummy.ind[-which(dummy.ind==v)]==ci # indicator for parameters of one var
+      coefs_ci <- coefs_bin[sec_par,]
+      if(sum(sec_par)==1) { #if v=continuous
+        coefs_comb[ci,] <- coefs_ci
+      } else {
+        coefs_comb[ci,] <- colSums(coefs_ci)
+      }
+    }
+    n_neighbors <- colSums(coefs_comb != 0) #colsums ok, because glmnet requires 2 predictor columns
+    return(n_neighbors) 
+  }
+  
+  
   
   # step 1: sanity checks & info from data
   stopifnot(ncol(data)==length(type)) # type vector has to match data
@@ -104,7 +135,6 @@ mMRFfit <- function(
       #glmnet doesnt give us the pseudo LL, therefore we have to calculate it
       
       #calculate LL_Null depending on cat/cont
-      
       if(type[v]=="g") {
         
         mean.i <- coef(fit, s=1)[1] #mean given by intercept model
@@ -118,11 +148,11 @@ mMRFfit <- function(
       } else if(type[v]=="p") {
         
         mean.i <- coef(fit, s=1)[1] #mean given by intercept model
-        LL_null <- sum(dpois(data[,v],mean.i, log=TRUE))
+        LL_null <- sum(dpois(data[,v],exp(mean.i), log=TRUE))
         
       } else if(type[v]=="c") {
         
-        n_cats <- lev[v]
+        n_cats <- emp_lev[v]
         
         #dummy matrices to compute LL
         ind_dum <- cbind(matrix(0,n,n_cats), as.numeric(data[,v]))
@@ -141,21 +171,21 @@ mMRFfit <- function(
       LL <- - 1/2 * dev + LL_sat
       
       # calc nonzero coefficients
-      
       n_lambdas <- length(fit$lambda)
+      n_para <- length(dummy.ind)-length(dummy.ind[dummy.ind==v]) #number predictor (indicator) variables
       
       if(type[v]!="c") { #continuous case
-        n_neighbors <- colSums(coef(fit)[-1,] != 0)
+        coefs_bin <- coef(fit)[-1,][1:n_para,] != 0 #nonzero?
+        n_neighbors <- f_comb_cat_par(dummy.ind, coefs_bin, nNode, v, n_lambdas)
       }
       if(type[v]=="c"){ #categorical case
-        
-        d_matrix <- matrix(0, nrow=ncol(X), ncol=n_lambdas)
+        m_neighbors <- matrix(0,ncol=n_lambdas, nrow=n_cats)
         for(ca in 1:n_cats){
-          d_matrix <- d_matrix + (coef(fit)[[ca]][-1,] != 0)
+          coefs_bin <- coef(fit)[[ca]][-1,][1:n_para,] != 0 #nonzero?
+          m_neighbors[ca,] <- f_comb_cat_par(dummy.ind, coefs_bin, nNode, v, n_lambdas)
         } 
-        n_neighbors <- colSums(d_matrix!=0)
+        n_neighbors <- apply(m_neighbors,2, max) #rule : one nonzero parameter means = neighborhood present
       }
-      
       
       # calc all EBICs
       EBIC_lambda <- -2*LL + n_neighbors * log(n) + 2*gam*n_neighbors*log(nNode-1)
