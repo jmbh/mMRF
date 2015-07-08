@@ -46,7 +46,7 @@ thresh <- list(c(0), c(0,0,0), c(0,0)) # all thresholds are zero (for the catego
 data <- mMRFsampler(n, type, lev, graph, nIter=1000, thresh)
 
 #fit a mixed graphical model
-fit <- mMRFfit(data, type, levels=lev, d=2)
+fit <- mMRFfit(data, type, lev=lev, d=2)
 grapht <- graph
 grapht[grapht!=0] <- 1 #binarize true graph
 

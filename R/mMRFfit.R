@@ -1,11 +1,5 @@
 
 
-load("data/data_mixed.RData")
-head(data_mixed)
-
-data <- data_mixed
-type <- c("c", "g", "p", "g") #data contains a categorical, a gaussian, a poisson and a gaussian variable in that order
-lev <- c(3, 1, 1, 1) # the categorical variable has three categories
 
 #### FUNCTION ####
 
