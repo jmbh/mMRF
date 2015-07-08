@@ -7,7 +7,7 @@ Estimating mixed Markov fields
 \description{
 Estimates a mixed Markov random field using L1-constrained neighborhood regression.}
 \usage{
-mMRFfit(data, type, lev, lambda.sel, folds, gam, d, rule.reg = "AND", rule.car = "OR")
+mMRFfit(data, type, lev, lambda.sel, folds, gam, d, rule.reg = "AND", rule.cat = "OR")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
