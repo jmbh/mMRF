@@ -164,27 +164,6 @@ mMRFfit <- function(
       
       LL <- - 1/2 * dev + LL_sat
       
-      # calc nonzero coefficients
-      
-      
- #     f_neighborhood
-#      ind.other <-  dummy.ind[which(dummy.ind!=v)]
-#      coefm <- as.matrix(coef(fit)[-1,])
-#      n_neighborhood <- matrix(0,nNode-1, length(fit$lambda))
-#      
-#      for(io in 1:(nNode-1)) {
-#        iv <- unique(ind.other)[io]
-#        n_neighborhood[io,] <- colSums(abs(
-#          rbind(coefm[which(ind.other==iv),],rep(0,length(fit$lambda)))
-#          ))
-#      }
-#      
-#      
-#      n_neighborhood_out <- sum(n_neighborhood!=0)
-      
-      
-      
-      
       n_lambdas <- length(fit$lambda)
       n_para <- length(dummy.ind)-length(dummy.ind[dummy.ind==v]) #number predictor (indicator) variables
       
