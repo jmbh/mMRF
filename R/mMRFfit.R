@@ -43,6 +43,7 @@ mMRFfit <- function(
   stopifnot(ncol(data)==length(type)) # type vector has to match data
   stopifnot(ncol(data)==length(lev)) # level vector has to match data
   if(sum(apply(data, 2, function(x) class(x)!="numeric"))>0) stop("Only numeric values permitted!")
+  if(sum(apply(data[,type=="p"], 2, function(x) sum(x-round(x))))>0) stop("Only integers permitted for Poisson random variables!")
   
   n <- nrow(data)
   nNode <- ncol(data)
