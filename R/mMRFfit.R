@@ -1,5 +1,14 @@
+#load("G:\\_THESIS\\mMRF\\data\\data_mixed.RData")
 
 
+#type=c("c", "g", "p", "g")
+#lev=c(3,1,1,1) 
+#lambda.sel="EBIC"
+#gam=.25
+#rule.reg="AND"
+#rule.cat="OR"
+#data<-data_mixed
+#d=2
 
 #### FUNCTION ####
 
@@ -12,38 +21,17 @@ mMRFfit <- function(
   gam=.25, #tuning parameter for EBIC, in case EBIC is used for lambda selection
   d=1, #maximal degree of the true graph
   rule.reg="AND", #parameter-aggregation of categorical variables
-  rule.cat="OR"  #parameter-aggregation across symmetric estimation
+  rule.cat="OR",  #parameter-aggregation across symmetric estimation
+  pbar = TRUE # shows a progress bar if TRUE
 )
   
 {
-  
-  ## functions
-  
-  # function to compute neighborhood size (not completely trivial because of categoricals)
-  
-  f_comb_cat_par <- function(dummy.ind, coefs_bin, nNode, v, n_lambdas) {
-    
-    coefs_comb <- matrix(0,nrow=(nNode-1), ncol=n_lambdas)
-    i_nodes <- (1:nNode)[-v]    
-    for(cin in 1:(nNode-1)) {
-      sec_par <- dummy.ind[-which(dummy.ind==v)]==i_nodes[cin] # indicator for parameters of one var
-      coefs_ci <- coefs_bin[sec_par,]
-      
-      if(sum(sec_par)>1) { #if variable i_nodes[cin] is categorical with more than 2 cats (or 2 parameters)
-        coefs_comb[cin,] <- colSums(coefs_ci)
-      } else {
-        coefs_comb[cin,] <- coefs_ci
-      }
-    }
-    n_neighbors <- colSums(coefs_comb != 0) #colsums ok, because glmnet requires 2 predictor columns
-    return(n_neighbors) 
-  }
   
   # step 1: sanity checks & info from data
   stopifnot(ncol(data)==length(type)) # type vector has to match data
   stopifnot(ncol(data)==length(lev)) # level vector has to match data
   if(sum(apply(data, 2, function(x) class(x)!="numeric"))>0) stop("Only numeric values permitted!")
-  if(sum(apply(data[,type=="p"], 2, function(x) sum(x-round(x))))>0) stop("Only integers permitted for Poisson random variables!")
+  if(sum(apply(cbind(data[,type=="p"],rep(1,nrow(data))), 2, function(x) sum(x-round(x))))>0) stop("Only integers permitted for Poisson random variables!")
   
   n <- nrow(data)
   nNode <- ncol(data)
@@ -95,6 +83,12 @@ mMRFfit <- function(
   # step 3: create storage for parameters
   model.par.matrix <- matrix(0, sum(emp_lev), sum(emp_lev))
   m_lambdas <- matrix(0,nNode,2) #storing lambda threshold and actual lambda
+  
+  #progress bar
+  if(pbar==TRUE) {
+    pb <- txtProgressBar(min = 0, max=nNode, initial=0, char="-", style = 3)
+  }
+  
   
   
   # step 4: estimation
@@ -166,23 +160,23 @@ mMRFfit <- function(
       LL <- - 1/2 * dev + LL_sat
       
       n_lambdas <- length(fit$lambda)
-      n_para <- length(dummy.ind)-length(dummy.ind[dummy.ind==v]) #number predictor (indicator) variables
       
+      # calculation of nonzero neighborhoods
       if(type[v]!="c") { #continuous case
-        coefs_bin <- as.matrix(coef(fit)[-1,][1:n_para,]) != 0 #nonzero?
-        n_neighbors <- f_comb_cat_par(dummy.ind, coefs_bin, nNode, v, n_lambdas)
+        coefs_bin <- as.matrix(coef(fit)[-1,]) != 0 #nonzero?
+        n_neighbors <- colSums(coefs_bin)
       }
       if(type[v]=="c"){ #categorical case
         m_neighbors <- matrix(0,ncol=n_lambdas, nrow=n_cats)
+        coefs_bin <- vector("list", length=n_cats)
         for(ca in 1:n_cats){
-          coefs_bin <- as.matrix(coef(fit)[[ca]][-1,][1:n_para,]) != 0 #nonzero?
-          m_neighbors[ca,] <- f_comb_cat_par(dummy.ind, coefs_bin, nNode, v, n_lambdas)
-        } 
-        n_neighbors <- apply(m_neighbors,2, max) #rule : one nonzero parameter means = neighborhood present
+          coefs_bin[[ca]] <- as.matrix(coef(fit)[[ca]][-1,]) != 0 #nonzero?
+        }
+        n_neighbors <- colSums(Reduce('+', coefs_bin)!=0) #rule: a predictor has a nonzero parameter with 1 category of the y, then we have a neighborhood relation
       }
       
       # calc all EBICs
-      EBIC_lambda <- -2*LL + n_neighbors * log(n) + 2*gam*n_neighbors*log(nNode-1)
+      EBIC_lambda <- -2*LL + n_neighbors * log(n) + 2*gam*n_neighbors*log(ncol(X)) 
       lambda_select <- fit$lambda[which(EBIC_lambda==min(EBIC_lambda))]
       coefs <- coef(fit, s=lambda_select) #lambda value with highest EBIC
       
@@ -226,6 +220,12 @@ mMRFfit <- function(
         model.par.matrix[ind==v,ind!=v][,dummy_par.sort.v][L,] <- coefsm[L,1:(exp.n.c)]
       }
     }
+    
+    #progress bar
+    if(pbar==TRUE) {
+      setTxtProgressBar(pb, v)
+    }
+    
     
   } # end variable-loop
   
@@ -276,17 +276,72 @@ mMRFfit <- function(
     m.p.m.2 <- m.p.m.2 * m.p.m.2_nonzero
   }
   
-  #make symmetric
-  wadj <- (m.p.m.2 + t(m.p.m.2))/2
+  #make matrices symmetric (taking the average)
+  wadj <- (m.p.m.2 + t(m.p.m.2))/2 #adjacency matrix
+  mpar.matrix.sym <- (model.par.matrix+t(model.par.matrix)) / 2
+  
+  #create list mapping: parameters <-> variables as input for qgraph "group"-argument
+  parvar.map <- parvar.map.label <-  vector("list", length=nNode)
+  ind_map <- 1
+  for(m in 1:nNode){
+    
+    #create indices list for qgraph
+    parvar.map[[m]] <- ind_map:(ind_map+lev[m]-1)
+    
+    #create labels for qgraph
+    if(lev[m]==1)
+    {
+      parvar.map.label[[m]] <- m
+    } else {
+      parvar.map.label[[m]] <- paste(m, 1:lev[m], sep = ".")
+    }
+    ind_map <- ind_map + lev[m]
+  }
+  
+  parvar.map.label_all <- do.call(c, parvar.map.label)
+  
+  
   
   #dichotomize
   adj <- (wadj!=0)*1
   
   # step 6: output
-  output_list <- list("adj"=adj, "wadj"=wadj, "wpar.matrix" = model.par.matrix, "lambda"=m_lambdas)
+  output_list <- list("adj"=adj, "wadj"=wadj, "wpar.matrix" = model.par.matrix, 
+                      "wpar.matrix.sym"=mpar.matrix.sym, "parvar.map"=parvar.map, 
+                      "parvar.map.labels"=parvar.map.label_all, "lambda"=m_lambdas)
+  class(output_list) <- "mMRF"
   
   return(output_list)
   
 } # end function
+
+
+#data <- data_mixed
+#fit1 <- mMRFfit(data=rbind(data_mixed,data_mixed), type=type, lev=lev, lambda.sel="EBIC",  d=1)
+#str(fit1)
+#fit1$wpar.matrix==0
+#fit1$wpar.matrix.sym==0
+#isSymmetric(fit1$wpar.matrix.sym)
+
+#fit2 <- mMRFfit(data=rbind(data_mixed,data_mixed), type=type, lev=lev, lambda.sel="CV",  d=1)
+#fit1$adj
+#fit2$adj
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

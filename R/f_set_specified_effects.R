@@ -167,39 +167,3 @@ f_set_specified_effects <- function(
 
 
 
-
-
-## testing function
-
-type <- c("c","c", "g", "g", "c", "p", "e")
-levels <- c(2, 4, 1, 1, 6, 1, 1)
-graph <- matrix(0,7,7)
-graph[2,5] <- 1
-graph[3,4] <- 0
-
-graph[6,7] <- 1
-graph[6,1] <- 1
-
-graph <- pmax(graph, t(graph))
-thresh <- list(rep(0,2), rep(0,4), rep(0,1), rep(0,1), rep(0,6), rep(0,1), rep(0,1))
-
-graph
-
-f_set_specified_effects(graph, type, levels, thresh)
-
-
-
-
-
-graph <- matrix(1,4,4)
-diag(graph) <- 0
-levels <- c(2,3,1,1)
-type <- c("c", "c", "g", "g")
-thresh <- list(rep(0,2), rep(0,3), rep(0,1), rep(0,1))
-f_set_specified_effects(graph, type, levels, thresh)
-
-
-
-
-
-

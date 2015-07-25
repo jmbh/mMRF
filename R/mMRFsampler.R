@@ -5,6 +5,11 @@
 #######################################################
 
 
+setwd("G:\\_THESIS\\mMRF\\src")
+sourceCpp("mMRFSampler_Ccore.cpp")
+
+
+
 mMRFsampler <- function(
   n, #number of samples
   type, #type of data/from which distribution comes the data
@@ -63,6 +68,11 @@ mMRFsampler <- function(
 
 
 
+graph <- matrix(0,3,3)
+graph[1,2] <- graph[2,1] <- 1
+thresh <- list(c(0,0,0), c(0,0,0), c(.1))
+
+mMRFsampler(n=10, type=c("c", "c", "g"), lev=c(3,3,1), graph = graph, thresh=thresh)
 
 
 
