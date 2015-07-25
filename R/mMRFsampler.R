@@ -5,8 +5,8 @@
 #######################################################
 
 
-setwd("G:\\_THESIS\\mMRF\\src")
-sourceCpp("mMRFSampler_Ccore.cpp")
+#setwd("G:\\_THESIS\\mMRF\\src")
+#sourceCpp("mMRFSampler_Ccore.cpp")
 
 
 
