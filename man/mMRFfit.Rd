@@ -37,6 +37,8 @@ Rule for combining parameters of interactions including categorical variables. T
 }
   \item{rule.reg}{
 Rule for combining the two parameters obtained for each edge due to the neighborhood-regression approach. The "OR"-rule determines conditional dependence if at least one of the two parameters is non-zero, the "AND"-rule determines conditional dependence if both parameters are non-zero.}
+}
+
   \item{pbar}{Shows a progress-bar if TRUE}
 }
 
