@@ -13,15 +13,9 @@ NumericVector indicatorstate;
 NumericVector potcat;
 NumericVector potcon;
 
-// DUMMY FOR TESTING
-
-// global for TESTING
-
-
 for(int p=0; p<n; p++) { // loop cases
 
 
-/*
     // generate initial states
     for (int node=0; node<nNodes; node++) {
       if(type_c[node] == 1)
@@ -34,7 +28,6 @@ for(int p=0; p<n; p++) { // loop cases
       Data(p,node) =  (double)R::rexp(1);
     }
 
-*/
 
     for(int iter = 0; iter<nIter; iter++) { // loop iterations
 
@@ -155,9 +148,7 @@ for(int p=0; p<n; p++) { // loop cases
             }
           }
 
-               // CONTINUOUS (most code just copied from above)
-
-              } else {
+              } else { // CONTINUOUS (most code just copied from above)
 
 
             //create storage for interaction terms
@@ -256,12 +247,16 @@ for(int p=0; p<n; p++) { // loop cases
         double natpar;
         natpar = thresh_m(node,0) + sum(potcat) + sum(potcon);
 
-        if(type_c[node]==2) {
+        if(type_c[node]==2) { //gauss
           Data(p,node) = R::rnorm(natpar,1);
-        } else if(type_c[node]==3) {
+        } else if(type_c[node]==3) { //pois
+          if (exp(natpar)<=0) Rcpp::stop("Lambda <= 0 for poisson node.");
+          if (exp(natpar)>(10^70)) Rcpp::stop("Lambda > 10^70 for poisson node");
           Data(p,node) = R::rpois(exp(natpar));
-        } else if(type_c[node]==4) {
-          Data(p,node) = R::rexp(1/(-natpar)); //bug in Rcpp!! it doesnt take the input as lambda, but as 1/lambda
+        } else if(type_c[node]==4) { //exp
+          if (1/(-natpar)<=0) Rcpp::stop("Lambda <= 0 for exponential node.");
+          if (1/(-natpar)>(10^70)) Rcpp::stop("Lambda > 10^70 for exponential node");
+          Data(p,node) = R::rexp(1/(-natpar)); //"bug" in Rcpp!! it doesnt take the input as lambda, but as 1/lambda
         }
 
 

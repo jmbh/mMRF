@@ -1,5 +1,5 @@
 #######################################################
-# Samples from a mixed Markov random field
+# Samples from a mixed exponential Markov random field
 # jonashaslbeck@gmail.com
 # January,2015
 #######################################################
@@ -65,6 +65,17 @@ mMRFsampler <- function(
   return(c_out)
   
 } # end of function
+
+
+
+
+
+
+
+
+
+
+
 
 
 
