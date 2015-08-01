@@ -16,7 +16,8 @@ mMRFsampler <- function(
   lev, # Number of levels
   graph, #graph structure
   nIter = 1000, #number of samples for each node
-  thresh #thresholds, for every node (& category)
+  thresh, #thresholds, for every node (& category)
+  parmatrix = NA #possibility to provide costum function to create model parameter matrix
 ){
   
   lev <- as.numeric(lev)
@@ -36,9 +37,12 @@ mMRFsampler <- function(
     stopifnot(is.positive.definite(g_covm))
   }
   
-  
-  graphe <- f_set_specified_effects(graph, type, lev, thresh) #create model.parameter.matrix
-  
+  if(is.na(parmatrix)==TRUE) {
+    graphe <- f_set_specified_effects(graph, type, lev, thresh) #create model.parameter.matrix
+  } else {
+    stopifnot(isSymmetric(parmatrix))
+    graphe <- parmatrix
+  }
   
   nNodes <- ncol(graph)  # number of nodes
   Data <- matrix(0, n, nNodes)  # create empty data matrix
