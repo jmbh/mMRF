@@ -2,11 +2,11 @@
 \alias{mMRFsampler}
 
 \title{
-Samples from a meMRF}
+Samples from a mMRF}
 \description{
 Samples from a mixed exponential Markov random field.}
 \usage{
-mMRFsampler(n, type, lev, graph, nIter = 1000, thresh)
+mMRFsampler(n, type, lev, graph, thresh, parmatrix = NA, nIter = 1000)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -14,7 +14,7 @@ mMRFsampler(n, type, lev, graph, nIter = 1000, thresh)
 Number of samples
 }
   \item{type}{
-p x 1 vector specifying the type of distribution for each variable ("g" = Gaussian, "p" = Poisson, "e" = Exponential, "c" = Categorical)
+ x 1 vector specifying the type of distribution for each variable ("g" = Gaussian, "p" = Poisson, "e" = Exponential, "c" = Categorical)
 }
   \item{lev}{
 p x 1 vector specifying the number of levels for each variables (for continuous variables: 1)
@@ -22,11 +22,14 @@ p x 1 vector specifying the number of levels for each variables (for continuous 
   \item{graph}{
 A p x p symmetric (weighted) adjacency matrix
 }
-  \item{nIter}{
-Iterations in the Gibbs Sampler
-}
   \item{thresh}{
 A list in which each entry corresponds to a variable; categorical variables have as many thresholds as categories
+}
+  \item{parmatrix}{
+Optional; A matrix specifying all parameters in the model. This provides a possibility to exactly specify all parameters instead of using the default mapping from the weighted adjacency matrix to the model parameter matrix as described below (Details). If provided, \code{graph} will be ignored.
+}
+  \item{nIter}{
+Iterations in the Gibbs Sampler
 }
 }
 \details{
@@ -57,7 +60,7 @@ lev <- c(1,3) # the categorical variable has 3 categories
 graph <- matrix(0,2,2) 
 graph[1,2] <- graph[2,1] <- .5 # we have an edge with weight .5 between the two nodes
 thresh <- list(c(0), c(0,0,0)) # all thresholds are zero (for the categorical variables each categoriy has a threshold)
-data <- mMRFsampler(n, type, lev, graph, nIter=1000, thresh)
+data <- mMRFsampler(n, type, lev, graph, thresh, parmatrix=NA, nIter=1000)
 head(data)
 
 

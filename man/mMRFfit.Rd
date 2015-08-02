@@ -85,6 +85,5 @@ mMRFfit(data=data_mixed,
         d=1, 
         rule.cat="OR",
         rule.reg="AND")
-        
         }
 

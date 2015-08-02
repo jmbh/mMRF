@@ -43,7 +43,7 @@ lev <- c(1,3, 2) # the categorical variable have 3 and 2 categories, respectivel
 graph <- matrix(0,3,3) 
 graph[1,2] <- graph[2,1] <- .5 # we have an edge with weight .5 between node 1 and 2
 thresh <- list(c(0), c(0,0,0), c(0,0)) # all thresholds are zero (for the categorical variables each categoriy has a threshold)
-data <- mMRFsampler(n, type, lev, graph, nIter=1000, thresh)
+data <- mMRFsampler(n, type, lev, graph, thresh, parmatrix=NA, nIter=1000)
 
 #fit a mixed graphical model
 fit <- mMRFfit(data, type, lev=lev, d=2)
