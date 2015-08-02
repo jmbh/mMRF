@@ -15,9 +15,9 @@ mMRFsampler <- function(
   type, #type of data/from which distribution comes the data
   lev, # Number of levels
   graph, #graph structure
-  nIter = 1000, #number of samples for each node
   thresh, #thresholds, for every node (& category)
-  parmatrix = NA #possibility to provide costum function to create model parameter matrix
+  parmatrix = NA, #possibility to provide costum function to create model parameter matrix
+  nIter = 1000 #number of samples for each node
 ){
   
   lev <- as.numeric(lev)
@@ -64,7 +64,7 @@ mMRFsampler <- function(
   type_c[type=="e"] <- 4
   
   #CALL C CORE
-  c_out <- mMRFCsampler(Data, n, nNodes, type_c, lev, nIter=100, thresh_m, graphe, inde)
+  c_out <- mMRFCsampler(Data, n, nNodes, type_c, lev, nIter=nIter, thresh_m, graphe, inde)
   
   return(c_out)
   
