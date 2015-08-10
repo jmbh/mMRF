@@ -69,21 +69,3 @@ mMRFsampler <- function(
   return(c_out)
   
 } # end of function
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -7,7 +7,7 @@
 #gam=.25
 #rule.reg="AND"
 #rule.cat="OR"
-#data<-data_mixed
+#data<-rbind(data_mixed, data_mixed)
 #d=2
 
 #### FUNCTION ####
@@ -21,10 +21,10 @@ mMRFfit <- function(
   gam=.25, #tuning parameter for EBIC, in case EBIC is used for lambda selection
   d=1, #maximal degree of the true graph
   rule.reg="AND", #parameter-aggregation of categorical variables
-  rule.cat="OR",  #parameter-aggregation across symmetric estimation
+  rule.cat="OR",  #either "OR"- conditional independence; or matrix that specifies costumized rules
   pbar = TRUE # shows a progress bar if TRUE
 )
-  
+
 {
   
   # step 1: sanity checks & info from data
@@ -88,8 +88,6 @@ mMRFfit <- function(
   if(pbar==TRUE) {
     pb <- txtProgressBar(min = 0, max=nNode, initial=0, char="-", style = 3)
   }
-  
-  
   
   # step 4: estimation
   for(v in seq_len(nNode))
@@ -234,41 +232,62 @@ mMRFfit <- function(
   
   # 5.1: aggregate on within categories
   
-  #select only colums where paramater are actually estimated (glmnet estimates k-1 not k parameters)
-  m.p.m <- model.par.matrix[,dummy_par.sort]
-  
-  # averaging over  columns
-  m.p.m.1 <-  t(apply(m.p.m, 1, function(x) {
+  f_agg_cats <- function(model.par.matrix, rule) {
     
-    out <- numeric(0)
-    for(i in 1:nNode)
-    {
-      out.n <- mean(abs(x[dummy.ind==i])) #without abs, this keeps the sign; but because of the glmnet parameterization in categoricals it burries nonzero coefficients in the binary case
-      if(rule.cat=="AND") {
-        out.n <- out.n * (sum(x[dummy.ind==i]==0)<1) #the second term = 0 when not all coefficients are nonzero
-      }
-      out <- rbind(out, out.n)
-    }
-    out <- matrix(out, nrow=1)
-  }))
-  
-  # averaging over rows
-  m.p.m.2 <-  apply(m.p.m.1, 2, function(x) {
-    out <- numeric()
-    for(i in 1:nNode)
-    {
+    #select only colums where paramater are actually estimated (glmnet estimates k-1 not k parameters)
+    m.p.m <- model.par.matrix[,dummy_par.sort]
+    
+    # averaging over  columns
+    m.p.m.1 <-  t(apply(m.p.m, 1, function(x) {
       
-      out.n <- mean(abs(x[ind==i]))
-      if(rule.cat=="AND") {
-        out.n <- out.n * (sum(x[ind==i]==0)<1) #the second term = 0 when not all coefficients are nonzero
+      out <- numeric(0)
+      for(i in 1:nNode)
+      {
+        out.n <- mean(abs(x[dummy.ind==i])) #without abs, this keeps the sign; but because of the glmnet parameterization in categoricals it burries nonzero coefficients in the binary case
+        if(rule=="AND") {
+          out.n <- out.n * (sum(x[dummy.ind==i]==0)<1) #the second term = 0 when not all coefficients are nonzero
+        }
+        out <- rbind(out, out.n)
       }
-      out <- rbind(out, out.n)
-    }
-    out <- matrix(out, ncol=1)
-  })
+      out <- matrix(out, nrow=1)
+    }))
+    
+    # averaging over rows
+    m.p.m.2 <-  apply(m.p.m.1, 2, function(x) {
+      out <- numeric()
+      for(i in 1:nNode)
+      {
+        
+        out.n <- mean(abs(x[ind==i]))
+        if(rule=="AND") {
+          out.n <- out.n * (sum(x[ind==i]==0)<1) #the second term = 0 when not all coefficients are nonzero
+        }
+        out <- rbind(out, out.n)
+      }
+      out <- matrix(out, ncol=1)
+    })
+    
+  } #end of function
+  
+  #costumized rule
+  if(rule.cat!="OR")
+  {
+    #check on matrix
+    if(sum(dim(rule.cat) == dim(model.par.matrix))!=2) stop("rule.cat must have the same dimension as the parameter matrix!")
+    
+    #apply rule
+    ind_costcat <- ((model.par.matrix + rule.cat)!=1)*1
+    diag(ind_costcat)<-0
+    ind_costcat_agg <- f_agg_cats(ind_costcat, "AND")
+    m.p.m.2 <- f_agg_cats(model.par.matrix, "OR") * ind_costcat_agg
+    
+  #standard rule: OR which leads to edges that indicate conditional independence
+  } else {
+    m.p.m.2 <- f_agg_cats(model.par.matrix, "OR")  
+  }
   
   
-  ### 5.3: aggregate across diagonal
+  ### 5.3: aggregate across two regressions
   
   if(rule.reg=="AND") {
     m.p.m.2_nonzero <- m.p.m.2!=0
@@ -299,8 +318,6 @@ mMRFfit <- function(
   }
   
   parvar.map.label_all <- do.call(c, parvar.map.label)
-  
-  
   
   #dichotomize
   adj <- (wadj!=0)*1

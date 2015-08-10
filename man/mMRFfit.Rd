@@ -33,7 +33,10 @@ Gamma hyperparameter when lambda.sel="EBIC". Defaults to gam=.25 (Barber et al.,
 Degrees of augmented interactions. The degree of augmented interactions reflects our belief about the maximal degree in the true graph. (see Loh & Wainwright, 2013)
 }
   \item{rule.cat}{
-Rule for combining parameters of interactions including categorical variables. The "OR"-rule determines conditional dependence if at least one parameter is non-zero. The "AND"-rule determines conditional dependence if all parameters are non-zero.
+Rule for combining parameters of interactions including categorical variables. The default, the "OR"-rule sets an edge to present when at least one parameter is non-zero. This corresponds to a conditional independence graph (Markov random field). Optionally, one can provide a matrix with the dimension of the parameter matrix to specify a costumized rule when to set an edge to present. Ones in this matrix indicate, that the parameter has to be present to render the corresponding edge present and a zero indicates that the parameter does not have to be zero in order to render the corresponding edge present. A matrix of ones would indicate that for each interaction, all parameters have to be nonzero to render the corresponding edge present. A matrix of zeros is equivalent to the "OR"-rule. For details see [REFERENCE TO JSTAT PAPER].
+
+
+The "OR"-rule determines conditional dependence if at least one parameter is non-zero. The "AND"-rule determines conditional dependence if all parameters are non-zero.
 }
   \item{rule.reg}{
 Rule for combining the two parameters obtained for each edge due to the neighborhood-regression approach. The "OR"-rule determines conditional dependence if at least one of the two parameters is non-zero, the "AND"-rule determines conditional dependence if both parameters are non-zero.}
