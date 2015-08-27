@@ -2,7 +2,7 @@ useDynLib(mMRF)
 importFrom(Rcpp, evalCpp)
 importFrom(matrixcalc, is.positive.definite)
 import(glmnet)
-export(mMRFfit, mMRFsampler, confusion)
+export(mMRFfit, mMRFsampler, confusion, print.mMRF)
 
 
 
