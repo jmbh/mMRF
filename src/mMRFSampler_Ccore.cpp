@@ -248,14 +248,15 @@ for(int p=0; p<n; p++) { // loop cases
         natpar = thresh_m(node,0) + sum(potcat) + sum(potcon);
 
         if(type_c[node]==2) { //gauss
+          if (exp(natpar)>(10^70)) Rcpp::stop("mu > 10^70 for Gaussian node");
           Data(p,node) = R::rnorm(natpar,1);
         } else if(type_c[node]==3) { //pois
           if (exp(natpar)<=0) Rcpp::stop("Lambda <= 0 for poisson node.");
-          if (exp(natpar)>(10^70)) Rcpp::stop("Lambda > 10^70 for poisson node");
+          if (exp(natpar)>(10^70)) Rcpp::stop("Lambda > 10^70 for Poisson node");
           Data(p,node) = R::rpois(exp(natpar));
         } else if(type_c[node]==4) { //exp
           if (1/(-natpar)<=0) Rcpp::stop("Lambda <= 0 for exponential node.");
-          if (1/(-natpar)>(10^70)) Rcpp::stop("Lambda > 10^70 for exponential node");
+          if (1/(-natpar)>(10^70)) Rcpp::stop("Lambda > 10^70 for Exponential node");
           Data(p,node) = R::rexp(1/(-natpar)); //"bug" in Rcpp!! it doesnt take the input as lambda, but as 1/lambda
         }
 

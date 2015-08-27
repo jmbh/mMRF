@@ -1,33 +1,5 @@
-##### Set_specified_effects.R
 
-## Wy do we need this function?
-# When categorical variables are involved, we have more parameters in the model
-# than are provided by a (weighted) adjacency matrix with dim=#variables
-# therefore we need no (arbitrarily) set some effects that reflect the conditional dependence
-# that is reflected by the present edge (weight)
-
-## What does the function do?
-# Input: (weighted) adjacency matrix + effect specifications
-# Output: Model-parameter-matrix
-
-
-############### development
-
-
-# whats difficult?
-# input: categorical variables with different k; + a continuous variable
-# output: coherent model-parameter-matrix
-
-#specified rules:
-# - interactions between categorical variables: equal categories = nonzero effect;
-#   unequal group sizes: k=1,2; j=1,2,3; then; effects: 11; 22; 23;
-#   which means the last category of the variable with k<j picks up effects until j
-# - interactions categorical * continuous: splithalf (if odd, round down) categories;
-#   lower "half" has an effect, upper "half" doesnt
-
-
-
-f_set_specified_effects <- function(
+potts_parameter <- function(
   graph, #(weighted) adjacency matrix ;matrix
   type,  # vector indicating the type of the variables ;vector
   levs, #how many levs do variables have (>1 only for categorical) ;vector
@@ -36,7 +8,6 @@ f_set_specified_effects <- function(
 {
   
   ## create empty matrix with correct dimensions
-  
   model.par.matrix <- matrix(0, sum(levs), sum(levs))
   nVar <- nrow(graph)
   
@@ -45,7 +16,7 @@ f_set_specified_effects <- function(
   for(v in 1:nVar) { #loop variables
     
     
-    # # type[v] == CATEGORICAL
+    # type[v] == CATEGORICAL
     if(type[v]=="c") {
       
       subm.mpm <- matrix(0,levs[v], sum(levs[-v])) #fill a dummy matrix; then include slip in thresholds and merge with full matrix
@@ -136,8 +107,7 @@ f_set_specified_effects <- function(
   }
   
   
-  
-  # set diagonal to 0
+  # insert thresholds in diagonal
   diag(model.par.matrix) <- unlist(thresh)
   
   

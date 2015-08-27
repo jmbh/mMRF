@@ -8,8 +8,6 @@ confusion <- function(tg, eg) {
     stop("Only zeros and ones allowed in the adjacency matrix!")
   }
   
-  #actual function...
-  
   
   diag(tg) <- diag(eg) <- NA
   m_eval <- cbind(tg[which(!is.na(tg))], eg[which(!is.na(eg))])

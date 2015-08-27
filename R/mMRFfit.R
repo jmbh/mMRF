@@ -1,16 +1,3 @@
-#load("G:\\_THESIS\\mMRF\\data\\data_mixed.RData")
-
-
-#type=c("c", "g", "p", "g")
-#lev=c(3,1,1,1) 
-#lambda.sel="EBIC"
-#gam=.25
-#rule.reg="AND"
-#rule.cat="OR"
-#data<-rbind(data_mixed, data_mixed)
-#d=2
-
-#### FUNCTION ####
 
 mMRFfit <- function(
   data, #data matrix, col=variables
@@ -54,7 +41,7 @@ mMRFfit <- function(
   
   
   # warning: entered lev = emp lev ?
-  if(sum(emp_lev[type=="c"]!=lev[type=="c"])) warning("Entered levels are not equal to empirical levels.")
+  if(sum(emp_lev[type=="c"]!=lev[type=="c"])) warning("Entered levels are not equal to empirical levels. Empirical levels are used.")
   
   
   #indexing-dummy that helps us to put parameters involving categorical variables in the right place
@@ -325,32 +312,12 @@ mMRFfit <- function(
   # step 6: output
   output_list <- list("adj"=adj, "wadj"=wadj, "wpar.matrix" = model.par.matrix, 
                       "wpar.matrix.sym"=mpar.matrix.sym, "parvar.map"=parvar.map, 
-                      "parvar.map.labels"=parvar.map.label_all, "lambda"=m_lambdas)
+                      "parvar.map.labels"=parvar.map.label_all, "lambda"=m_lambdas[,1])
   class(output_list) <- "mMRF"
   
   return(output_list)
   
-} # end function
-
-
-#data <- data_mixed
-#fit1 <- mMRFfit(data=rbind(data_mixed,data_mixed), type=type, lev=lev, lambda.sel="EBIC",  d=1)
-#str(fit1)
-#fit1$wpar.matrix==0
-#fit1$wpar.matrix.sym==0
-#isSymmetric(fit1$wpar.matrix.sym)
-
-#fit2 <- mMRFfit(data=rbind(data_mixed,data_mixed), type=type, lev=lev, lambda.sel="CV",  d=1)
-#fit1$adj
-#fit2$adj
-
-
-
-
-
-
-
-
+} 
 
 
 

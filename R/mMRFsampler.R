@@ -1,14 +1,3 @@
-#######################################################
-# Samples from a mixed exponential Markov random field
-# jonashaslbeck@gmail.com
-# January,2015
-#######################################################
-
-
-#setwd("G:\\_THESIS\\mMRF\\src")
-#sourceCpp("mMRFSampler_Ccore.cpp")
-
-
 
 mMRFsampler <- function(
   n, #number of samples
@@ -38,7 +27,7 @@ mMRFsampler <- function(
   }
   
   if(is.na(parmatrix)==TRUE) {
-    graphe <- f_set_specified_effects(graph, type, lev, thresh) #create model.parameter.matrix
+    graphe <- potts_parameter(graph, type, lev, thresh) #create model.parameter.matrix
   } else {
     stopifnot(isSymmetric(parmatrix))
     graphe <- parmatrix
